@@ -1,8 +1,10 @@
+import nltk
 from nltk.tokenize import word_tokenize, sent_tokenize
 import urllib.request
 from bs4 import BeautifulSoup
 import string
 from collections import Counter
+from itertools import chain
 
 def get_clean_tokens(tokens):
     '''
@@ -11,6 +13,13 @@ def get_clean_tokens(tokens):
 
     Fungsi semua preprocessing, menerima tokens dari tokenisasi NLTK.
     Mengeluarkan token bersih, hasil preprocessing
+
+    Preprocessing
+    1. Menambah <s> dan </s>
+    2. Mengatasi bug karena library NLTK
+    3. Mengatasi bug karena kesalahan penulisan detik.com
+    4. Menghilangkan tanda baca
+    5. Menghilangkan tag editor dan tulisan setelahnya (masih masalah)
 
     '''
     # Menambahkan <s> dan <\s> pada setiap kalimat
@@ -63,10 +72,13 @@ def get_bigram_matrix(clean_tokens):
     '''
     bigrams = [(clean_tokens[i], clean_tokens[i+1]) for i in range(0,
         len(clean_tokens)-1)]
-    bi_matrix = Counter(bigrams)
-    return(bi_matrix)
+    # bi_matrix = Counter(bigrams)
+    return bigrams
 
 def main():
+    # Asumsi belum mendownload module yang dibutuhkan oleh nltk
+    nltk.download('punkt')
+
     # Read semua file pada folder txt menjadi satu list kumpulan berita
     f_path = "article/detikcom/"
     f_names = []
@@ -80,31 +92,17 @@ def main():
             texts.append(new_text)
 
     # Tokenisasi semua elemen berupa berita pada list texts. Setiap hasil tokenisasi disimpan pada list
-    list_of_tokens = []
-    for text in texts:
-        tokens = word_tokenize(text)
-        list_of_tokens.append(tokens)
+    list_of_tokens = [word_tokenize(text) for text in texts]
 
-    # Preprocessing
-    # 1. Menambah <s> dan </s>
-    # 2. Mengatasi bug karena library NLTK
-    # 3. Mengatasi bug karena kesalahan penulisan detik.com
-    # 4. Menghilangkan tanda baca
-    # 5. Menghilangkan tag editor dan tulisan setelahnya (masih masalah)
-
-    list_of_clean_tokens = []
-    for tokens in list_of_tokens:
-        clean_tokens = get_clean_tokens(tokens)
-        list_of_clean_tokens.append(clean_tokens)
+    # Memanggil fungsi get_clean_tokens untuk melakukan preprocessing
+    list_of_clean_tokens = [get_clean_tokens(tokens) for tokens in list_of_tokens]
     
-    # Membuat Bigram Matrix (belum jadi)
-    '''
-    bigram_matrices = {}
-    for clean_token in list_of_clean_tokens:
-    bigram_matrix = get_bigram_matrix(clean_token)
-    for key, value in bigram_matrix.items():
-    bigram_matrices[key] = value
-    '''
-
+    # Konversi list 2 dimensi ke dalam list 1 dimensi
+    list_tokens = list(chain.from_iterable(list_of_clean_tokens))
+    
+    # Membuat bigram dari token yang telah di preprocessing
+    bigram = get_bigram_matrix(list_tokens)
+    print(bigram)
+    
 if __name__ == "__main__":
     main()

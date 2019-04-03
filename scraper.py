@@ -3,6 +3,13 @@ import urllib.request
 import re
 
 def parse_sitemap(links):
+    '''
+    Fungsi untuk melakukan parsing sitemap.xml yang ada pada suatu situs
+    
+    Input : Website sitemap.xml
+    Ouput : Url yang terdapat pada sitemap
+    '''
+
     urls = []
     for link in links:
         sauce = urllib.request.urlopen(link).read()
@@ -15,6 +22,13 @@ def parse_sitemap(links):
     return urls
 
 def crawl_html(urls):
+    '''
+    Fungsi untuk melakukan crawling pada suatu situs dan mengambil file html
+    yang nantinya dilakukan parsing pada html tersebut
+
+    Input : Url yang diakan diparsing
+    Output : File txt hasil parsing
+    '''
     for i in range(len(urls)):
         filename = 'article\detikcom'
         sauce = urllib.request.urlopen(urls[i]).read()
@@ -26,8 +40,7 @@ def crawl_html(urls):
         
         print("Article %s scraped.." % i)
 
-if __name__ == "__main__":
-
+def main():
     # definisikan url yang akan di scraping
     links_sitemap = [
         'https://inet.detik.com/security/sitemap_web.xml',
@@ -37,3 +50,6 @@ if __name__ == "__main__":
 
     urls = parse_sitemap(links_sitemap)
     crawl_html(urls)
+
+if __name__ == "__main__":
+    main()
